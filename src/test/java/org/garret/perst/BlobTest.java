@@ -1,7 +1,7 @@
 /*
  * $URL: BlobTest.java $ 
  * $Rev: 3582 $ 
- * $Date: 2007-11-25 14:29:06 +0300 (Вс., 25 нояб. 2007) $
+ * $Date: 2007-11-25 12:29:06 +0100 (Sun, 25 Nov 2007) $
  *
  * Copyright 2005 Netup, Inc. All rights reserved.
  * URL:    http://www.netup.biz

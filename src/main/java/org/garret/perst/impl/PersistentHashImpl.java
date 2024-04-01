@@ -149,6 +149,7 @@ class PersistentHashImpl<K, V> extends PersistentResource implements IPersistent
     
     public V put(K key, V value) 
     {
+        getStorage().makePersistent(key);
         int hashCode = key.hashCode();
         HashPage pg = root;
         if (pg == null) {

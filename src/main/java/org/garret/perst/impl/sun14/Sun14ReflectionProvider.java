@@ -15,18 +15,19 @@ public class Sun14ReflectionProvider implements ReflectionProvider {
 
     static final Class[] defaultConstructorProfile = new Class[0];
 
-    public Sun14ReflectionProvider() {
+	public Sun14ReflectionProvider() {
         try {
-            Class objectStreamClass = Class.forName("java.io.ObjectStreamClass$FieldReflector");
-            Field unsafeField = objectStreamClass.getDeclaredField("unsafe");
-            unsafeField.setAccessible(true);
-			Object unsafeImpl = unsafeField.get(null);
-			if (!(unsafeImpl instanceof Unsafe)) {
-				Field theUnsafeField = Unsafe.class.getDeclaredField("theUnsafe");
-				theUnsafeField.setAccessible(true);
-				unsafeImpl = theUnsafeField.get(null);
+			Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+			unsafeField.setAccessible(true);
+			unsafe = (Unsafe)unsafeField.get(null);
+
+			try {
+				Class cls = Class.forName("jdk.internal.module.IllegalAccessLogger");
+				Field logger = cls.getDeclaredField("logger");
+				unsafe.putObjectVolatile(cls, unsafe.staticFieldOffset(logger), null);
+			} catch (Exception x) {
+				// JDK 21 doesn not have jdk.internal.module.IllegalAccessLogger class
 			}
-			unsafe = (Unsafe) unsafeImpl;
             javaLangObjectConstructor = Object.class.getDeclaredConstructor(new Class[0]);;
             factory = ReflectionFactory.getReflectionFactory();
             constructorHash = new HashMap();
@@ -82,5 +83,41 @@ public class Sun14ReflectionProvider implements ReflectionProvider {
 
     public void set(Field field, Object object, Object value) throws Exception { 
         unsafe.putObject(object, unsafe.objectFieldOffset(field), value);
+    }
+
+    public int getInt(Field field, Object object) throws Exception { 
+        return unsafe.getInt(object, unsafe.objectFieldOffset(field));
+    }
+
+    public long getLong(Field field, Object object) throws Exception { 
+        return unsafe.getLong(object, unsafe.objectFieldOffset(field));
+    }
+
+    public short getShort(Field field, Object object) throws Exception { 
+        return unsafe.getShort(object, unsafe.objectFieldOffset(field));
+    }
+
+    public char getChar(Field field, Object object) throws Exception { 
+        return unsafe.getChar(object, unsafe.objectFieldOffset(field));
+    }
+
+    public byte getByte(Field field, Object object) throws Exception { 
+        return unsafe.getByte(object, unsafe.objectFieldOffset(field));
+    }
+
+    public float getFloat(Field field, Object object) throws Exception { 
+        return unsafe.getFloat(object, unsafe.objectFieldOffset(field));
+    }
+
+    public double getDouble(Field field, Object object) throws Exception { 
+        return unsafe.getDouble(object, unsafe.objectFieldOffset(field));
+    }
+
+    public boolean getBoolean(Field field, Object object) throws Exception { 
+        return unsafe.getBoolean(object, unsafe.objectFieldOffset(field));
+    }
+
+    public Object get(Field field, Object object) throws Exception { 
+        return unsafe.getObject(object, unsafe.objectFieldOffset(field));
     }
 }

@@ -44,4 +44,40 @@ public class StandardReflectionProvider implements ReflectionProvider {
     public void set(Field field, Object object, Object value) throws Exception { 
         field.set(object, value);
     }
+
+    public int getInt(Field field, Object object) throws Exception { 
+        return field.getInt(object);
+    }
+
+    public long getLong(Field field, Object object) throws Exception { 
+        return field.getLong(object);
+    }
+
+    public short getShort(Field field, Object object) throws Exception { 
+        return field.getShort(object);
+    }
+
+    public char getChar(Field field, Object object) throws Exception { 
+        return field.getChar(object);
+    }
+
+    public byte getByte(Field field, Object object) throws Exception { 
+        return field.getByte(object);
+    }
+
+    public float getFloat(Field field, Object object) throws Exception { 
+        return field.getFloat(object);
+    }
+
+    public double getDouble(Field field, Object object) throws Exception { 
+        return field.getDouble(object);
+    }
+
+    public boolean getBoolean(Field field, Object object) throws Exception { 
+        return field.getBoolean(object);
+    }
+
+    public Object get(Field field, Object object) throws Exception { 
+        return field.get(object);
+    }
 }

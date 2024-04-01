@@ -215,9 +215,9 @@ public class L2List extends L2ListElem implements ITable {
      * If the list fits in the specified array with room to spare (i.e., the
      * array has more elements than the list), the element in the array
      * immediately following the end of the collection is set to
-     * <tt>null</tt>.  This is useful in determining the length of the list
+     * <code>null</code>.  This is useful in determining the length of the list
      * <i>only</i> if the caller knows that the list does not contain any
-     * <tt>null</tt> elements.
+     * <code>null</code> elements.
      *
      * @param a the array into which the elements of the list are to
      *		be stored, if it is big enough; otherwise, a new array of the
@@ -243,16 +243,16 @@ public class L2List extends L2ListElem implements ITable {
     }
 
     /**
-     * Returns <tt>true</tt> if this collection contains all of the elements
+     * Returns <code>true</code> if this collection contains all of the elements
      * in the specified collection. <p>
      *
      * This implementation iterates over the specified collection, checking
      * each element returned by the iterator in turn to see if it's
      * contained in this collection.  If all elements are so contained
-     * <tt>true</tt> is returned, otherwise <tt>false</tt>.
+     * <code>true</code> is returned, otherwise <code>false</code>.
      *
      * @param c collection to be checked for containment in this collection.
-     * @return <tt>true</tt> if this collection contains all of the elements
+     * @return <code>true</code> if this collection contains all of the elements
      * 	       in the specified collection.
      * @throws NullPointerException if the specified collection is null.
      * 
@@ -280,14 +280,14 @@ public class L2List extends L2ListElem implements ITable {
      * each object returned by the iterator to this collection, in turn.<p>
      *
      * Note that this implementation will throw an
-     * <tt>UnsupportedOperationException</tt> unless <tt>add</tt> is
+     * <code>UnsupportedOperationException</code> unless <code>add</code> is
      * overridden (assuming the specified collection is non-empty).
      *
      * @param c collection whose elements are to be added to this collection.
-     * @return <tt>true</tt> if this collection changed as a result of the
+     * @return <code>true</code> if this collection changed as a result of the
      *         call.
      * @throws UnsupportedOperationException if this collection does not
-     *         support the <tt>addAll</tt> method.
+     *         support the <code>addAll</code> method.
      * @throws NullPointerException if the specified collection is null.
      * 
      * @see #add(Object)
@@ -307,18 +307,18 @@ public class L2List extends L2ListElem implements ITable {
      * This implementation iterates over this collection, checking each
      * element returned by the iterator in turn to see if it's contained
      * in the specified collection.  If it's so contained, it's removed from
-     * this collection with the iterator's <tt>remove</tt> method.<p>
+     * this collection with the iterator's <code>remove</code> method.<p>
      *
      * Note that this implementation will throw an
-     * <tt>UnsupportedOperationException</tt> if the iterator returned by the
-     * <tt>iterator</tt> method does not implement the <tt>remove</tt> method
+     * <code>UnsupportedOperationException</code> if the iterator returned by the
+     * <code>iterator</code> method does not implement the <code>remove</code> method
      * and this collection contains one or more elements in common with the
      * specified collection.
      *
      * @param c elements to be removed from this collection.
-     * @return <tt>true</tt> if this collection changed as a result of the
+     * @return <code>true</code> if this collection changed as a result of the
      *         call.
-     * @throws UnsupportedOperationException if the <tt>removeAll</tt> method
+     * @throws UnsupportedOperationException if the <code>removeAll</code> method
      * 	       is not supported by this collection.
      * @throws NullPointerException if the specified collection is null.
      *
@@ -346,18 +346,18 @@ public class L2List extends L2ListElem implements ITable {
      * This implementation iterates over this collection, checking each
      * element returned by the iterator in turn to see if it's contained
      * in the specified collection.  If it's not so contained, it's removed
-     * from this collection with the iterator's <tt>remove</tt> method.<p>
+     * from this collection with the iterator's <code>remove</code> method.<p>
      *
      * Note that this implementation will throw an
-     * <tt>UnsupportedOperationException</tt> if the iterator returned by the
-     * <tt>iterator</tt> method does not implement the <tt>remove</tt> method
+     * <code>UnsupportedOperationException</code> if the iterator returned by the
+     * <code>iterator</code> method does not implement the <code>remove</code> method
      * and this collection contains one or more elements not present in the
      * specified collection.
      *
      * @param c elements to be retained in this collection.
-     * @return <tt>true</tt> if this collection changed as a result of the
+     * @return <code>true</code> if this collection changed as a result of the
      *         call.
-     * @throws UnsupportedOperationException if the <tt>retainAll</tt> method
+     * @throws UnsupportedOperationException if the <code>retainAll</code> method
      * 	       is not supported by this Collection.
      * @throws NullPointerException if the specified collection is null.
      *

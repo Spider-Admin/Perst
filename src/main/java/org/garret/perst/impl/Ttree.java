@@ -185,9 +185,9 @@ public class Ttree<T> extends PersistentCollection<T> implements SortedCollectio
      * If this index fits in the specified array with room to spare
      * (i.e., the array has more elements than this index), the element
      * in the array immediately following the end of the index is set to
-     * <tt>null</tt>.  This is useful in determining the length of this
+     * <code>null</code>.  This is useful in determining the length of this
      * index <i>only</i> if the caller knows that this index does
-     * not contain any <tt>null</tt> elements.)<p>
+     * not contain any <code>null</code> elements.)<p>
      * @return array of objects in the index ordered by key value
      */
     public <E> E[] toArray(E[] arr) {

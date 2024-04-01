@@ -1,11 +1,12 @@
 /*
  * Javassist, a Java-bytecode translator toolkit.
- * Copyright (C) 1999-2007 Shigeru Chiba. All Rights Reserved.
+ * Copyright (C) 1999- Shigeru Chiba. All Rights Reserved.
  *
  * The contents of this file are subject to the Mozilla Public License Version
  * 1.1 (the "License"); you may not use this file except in compliance with
  * the License.  Alternatively, the contents of this file may be used under
- * the terms of the GNU Lesser General Public License Version 2.1 or later.
+ * the terms of the GNU Lesser General Public License Version 2.1 or later,
+ * or the Apache License Version 2.0.
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
@@ -15,9 +16,14 @@
 
 package javassist.expr;
 
-import javassist.bytecode.*;
-import javassist.CtClass;
 import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.bytecode.BadBytecode;
+import javassist.bytecode.CodeAttribute;
+import javassist.bytecode.CodeIterator;
+import javassist.bytecode.ExceptionTable;
+import javassist.bytecode.MethodInfo;
+import javassist.bytecode.Opcode;
 
 /**
  * A translator of method bodies.
@@ -29,7 +35,7 @@ import javassist.CannotCompileException;
  * <p>If <code>instrument()</code> is called in
  * <code>CtMethod</code>, the method body is scanned from the beginning
  * to the end.
- * Whenever an expression, such as a method call and a <tt>new</tt>
+ * Whenever an expression, such as a method call and a <code>new</code>
  * expression (object creation),
  * is found, <code>edit()</code> is called in <code>ExprEdit</code>.
  * <code>edit()</code> can inspect and modify the given expression.
@@ -39,7 +45,7 @@ import javassist.CannotCompileException;
  *
  * <p>The following code is an example:
  *
- * <ul><pre>
+ * <pre>
  * CtMethod cm = ...;
  * cm.instrument(new ExprEditor() {
  *     public void edit(MethodCall m) throws CannotCompileException {
@@ -48,7 +54,7 @@ import javassist.CannotCompileException;
  *                                + m.getLineNumber());
  *     }
  * });
- * </pre></ul>
+ * </pre>
  *
  * <p>This code inspects all method calls appearing in the method represented
  * by <code>cm</code> and it prints the names and the line numbers of the
@@ -242,12 +248,12 @@ public class ExprEditor {
                 }
             }
             context.prevOp = c;
+
             if (expr != null && expr.edited()) {
                 context.updateMax(expr.locals(), expr.stack());
                 return true;
             }
-            else
-                return false;
+            return false;
         }
         catch (BadBytecode e) {
             throw new CannotCompileException(e);
@@ -255,10 +261,10 @@ public class ExprEditor {
     }
 
     /**
-     * Edits a <tt>new</tt> expression (overridable).
+     * Edits a <code>new</code> expression (overridable).
      * The default implementation performs nothing.
      *
-     * @param e         the <tt>new</tt> expression creating an object.
+     * @param e         the <code>new</code> expression creating an object.
      */
     public void edit(NewExpr e) throws CannotCompileException {}
 
@@ -266,7 +272,7 @@ public class ExprEditor {
      * Edits an expression for array creation (overridable).
      * The default implementation performs nothing.
      *
-     * @param a         the <tt>new</tt> expression for creating an array.
+     * @param a         the <code>new</code> expression for creating an array.
      * @throws CannotCompileException
      */
     public void edit(NewArray a) throws CannotCompileException {}

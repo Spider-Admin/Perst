@@ -65,7 +65,7 @@ public class PerstTranslator implements Translator {
         persistentInterface = pool.get("org.garret.perst.IPersistent");
         factory = pool.get("org.garret.perst.impl.LoadFactory");
         object = pool.get("java.lang.Object");
-        isRecursive = persistent.getDeclaredMethod("recursiveLoading"); 
+        isRecursive = persistentInterface.getDeclaredMethod("recursiveLoading"); 
         constructorParams = new CtClass[]{pool.get("org.garret.perst.impl.ClassDescriptor")};
         serializable = pool.get("org.garret.perst.SelfSerializable");
         pack = serializable.getDeclaredMethod("pack");
@@ -177,10 +177,12 @@ public class PerstTranslator implements Translator {
                                 // increased code size, because in this case before ALL access
                                 // to fields of persistent capable object call of load() method
                                 // will be inserted.
+								/*
                                 else if (!fa.isSelfReader()) 
                                 { 
                                     fa.replace("{ $0.load(); $_ = $proceed($$); }");
                                 }
+								*/
                             }
                         } catch (NotFoundException x) {}
                     }

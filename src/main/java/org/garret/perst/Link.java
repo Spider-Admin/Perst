@@ -20,9 +20,9 @@ public interface Link<T> extends ITable<T>, List<T>, RandomAccess {
     public void setSize(int newSize);
     
     /**
-     * Returns <tt>true</tt> if there are no related object
+     * Returns <code>true</code> if there are no related object
      *
-     * @return <tt>true</tt> if there are no related object
+     * @return <code>true</code> if there are no related object
      */
     boolean isEmpty();
 
@@ -111,9 +111,9 @@ public interface Link<T> extends ITable<T>, List<T>, RandomAccess {
      * If this index fits in the specified array with room to spare
      * (i.e., the array has more elements than this index), the element
      * in the array immediately following the end of the index is set to
-     * <tt>null</tt>.  This is useful in determining the length of this
+     * <code>null</code>.  This is useful in determining the length of this
      * index <i>only</i> if the caller knows that this index does
-     * not contain any <tt>null</tt> elements.)<p>
+     * not contain any <code>null</code> elements.)<p>
      * @return array of object with relation members
      */
     public <T> T[] toArray(T[] arr);

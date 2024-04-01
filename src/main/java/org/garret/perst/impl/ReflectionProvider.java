@@ -22,4 +22,22 @@ public interface ReflectionProvider {
     void setBoolean(Field field, Object object, boolean value) throws Exception;
 
     void set(Field field, Object object, Object value) throws Exception;
+
+    int  getInt(Field field, Object object) throws Exception;
+
+    long getLong(Field field, Object object) throws Exception;
+    
+    short getShort(Field field, Object object) throws Exception;
+
+    char getChar(Field field, Object object) throws Exception;
+
+    byte getByte(Field field, Object object) throws Exception;
+
+    float getFloat(Field field, Object object) throws Exception;
+
+    double getDouble(Field field, Object object) throws Exception;
+
+    boolean getBoolean(Field field, Object object) throws Exception;
+
+    Object get(Field field, Object object) throws Exception;
 }

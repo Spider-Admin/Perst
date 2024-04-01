@@ -745,7 +745,7 @@ public interface Storage {
     /**
      * Set database property. This method should be invoked before opening database. 
      * Currently the following boolean properties are supported:
-     * <TABLE summary=""><TR><TH>Property name</TH><TH>Parameter type</TH><TH>Default value</TH><TH>Description</TH></TR>
+     * <TABLE><caption>Database properties</caption><TR><TH>Property name</TH><TH>Parameter type</TH><TH>Default value</TH><TH>Description</TH></TR>
      * <TR><TD><code>perst.implicit.values</code></TD><TD>Boolean</TD><TD>false</TD>
      * <TD>Treate any class not derived from IPersistent as <i>value</i>. 
      * This object will be embedded inside persistent object containing reference to this object.

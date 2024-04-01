@@ -935,7 +935,9 @@ public class StorageImpl implements Storage {
 
 
     public void clearObjectCache() {
-        objectCache.clear();
+		synchronized (objectCache) {
+			objectCache.clear();
+		}
     }
 
      protected OidHashTable createObjectCache(String kind, long pagePoolSize, int objectCacheSize)
@@ -1580,47 +1582,13 @@ public class StorageImpl implements Storage {
                 long pos = Bytes.unpack8(pg.data, k*8);
                 index[j] = pos;
                 oids[j] = j;
-                if ((pos & dbFreeHandleFlag) == 0) {
-                    if ((pos & dbPageObjectFlag) != 0) {
-                        nPagedObjects += 1;
-                    } else if (pos != 0) {
-                        int offs = (int)pos & (Page.pageSize-1);
-                        Page op = pool.getPage(pos - offs);
-                        int size = ObjectHeader.getSize(op.data, offs & ~dbFlagsMask);
-                        size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
-                        totalRecordsSize += size;
-                        pool.unfix(op);
-                    }
+                if ((pos & (dbFreeHandleFlag|dbPageObjectFlag)) == dbPageObjectFlag) {
+                    nPagedObjects += 1;
                 }
             }
             pool.unfix(pg);
 
         }
-        Header newHeader = new Header();
-        newHeader.curr = 0;
-        newHeader.dirty = false;
-        newHeader.databaseFormatVersion = header.databaseFormatVersion;
-        long newFileSize = (long)(nPagedObjects + nIndexPages*2 + 1)*Page.pageSize + totalRecordsSize;
-        newFileSize = (newFileSize + Page.pageSize-1) & ~(Page.pageSize-1);
-        newHeader.root = new RootPage[2];
-        newHeader.root[0] = new RootPage();
-        newHeader.root[1] = new RootPage();
-        newHeader.root[0].size = newHeader.root[1].size = newFileSize;
-        newHeader.root[0].index = newHeader.root[1].shadowIndex = Page.pageSize;
-        newHeader.root[0].shadowIndex = newHeader.root[1].index = Page.pageSize + (long)nIndexPages*Page.pageSize;
-        newHeader.root[0].shadowIndexSize = newHeader.root[0].indexSize =
-            newHeader.root[1].shadowIndexSize = newHeader.root[1].indexSize = nIndexPages*dbHandlesPerPage;
-        newHeader.root[0].indexUsed = newHeader.root[1].indexUsed = nObjects;
-        newHeader.root[0].freeList = newHeader.root[1].freeList = header.root[curr].freeList;
-        newHeader.root[0].bitmapEnd = newHeader.root[1].bitmapEnd = header.root[curr].bitmapEnd;
-
-        newHeader.root[0].rootObject = newHeader.root[1].rootObject = header.root[curr].rootObject;
-        newHeader.root[0].classDescList = newHeader.root[1].classDescList = header.root[curr].classDescList;
-        newHeader.root[0].bitmapExtent = newHeader.root[1].bitmapExtent = header.root[curr].bitmapExtent;
-        byte[] page = new byte[Page.pageSize];
-        newHeader.pack(page);
-        out.write(page);
-
         long pageOffs = (long)(nIndexPages*2 + 1)*Page.pageSize;
         long recOffs = (long)(nPagedObjects + nIndexPages*2 + 1)*Page.pageSize;
         GenericSort.sort(new GenericSortArray() {
@@ -1654,6 +1622,7 @@ public class StorageImpl implements Storage {
                     Page op = pool.getPage(pos - offs);
                     int size = ObjectHeader.getSize(op.data, offs & ~dbFlagsMask);
                     size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
+					totalRecordsSize += size;
                     recOffs += size;
                     pool.unfix(op);
                 }
@@ -1661,6 +1630,32 @@ public class StorageImpl implements Storage {
                 Bytes.pack8(newIndex, oid*8, pos);
             }
         }
+
+        Header newHeader = new Header();
+        newHeader.curr = 0;
+        newHeader.dirty = false;
+        newHeader.databaseFormatVersion = header.databaseFormatVersion;
+        long newFileSize = (long)(nPagedObjects + nIndexPages*2 + 1)*Page.pageSize + totalRecordsSize;
+        newFileSize = (newFileSize + Page.pageSize-1) & ~(Page.pageSize-1);
+        newHeader.root = new RootPage[2];
+        newHeader.root[0] = new RootPage();
+        newHeader.root[1] = new RootPage();
+        newHeader.root[0].size = newHeader.root[1].size = newFileSize;
+        newHeader.root[0].index = newHeader.root[1].shadowIndex = Page.pageSize;
+        newHeader.root[0].shadowIndex = newHeader.root[1].index = Page.pageSize + (long)nIndexPages*Page.pageSize;
+        newHeader.root[0].shadowIndexSize = newHeader.root[0].indexSize =
+            newHeader.root[1].shadowIndexSize = newHeader.root[1].indexSize = nIndexPages*dbHandlesPerPage;
+        newHeader.root[0].indexUsed = newHeader.root[1].indexUsed = nObjects;
+        newHeader.root[0].freeList = newHeader.root[1].freeList = header.root[curr].freeList;
+        newHeader.root[0].bitmapEnd = newHeader.root[1].bitmapEnd = header.root[curr].bitmapEnd;
+
+        newHeader.root[0].rootObject = newHeader.root[1].rootObject = header.root[curr].rootObject;
+        newHeader.root[0].classDescList = newHeader.root[1].classDescList = header.root[curr].classDescList;
+        newHeader.root[0].bitmapExtent = newHeader.root[1].bitmapExtent = header.root[curr].bitmapExtent;
+        byte[] page = new byte[Page.pageSize];
+        newHeader.pack(page);
+        out.write(page);
+
         out.write(newIndex);
         out.write(newIndex);
 
@@ -4615,51 +4610,52 @@ public class StorageImpl implements Storage {
         throws Exception
     {
         ClassDescriptor.FieldDescriptor[] flds = desc.allFields;
+        ReflectionProvider provider = ClassDescriptor.getReflectionProvider();
         for (int i = 0, n = flds.length; i < n; i++) {
             ClassDescriptor.FieldDescriptor fd = flds[i];
             Field f = fd.field;
             switch(fd.type) {
                 case ClassDescriptor.tpByte:
                     buf.extend(offs + 1);
-                    buf.arr[offs++] = f.getByte(obj);
+                    buf.arr[offs++] = provider.getByte(f, obj);
                     continue;
                 case ClassDescriptor.tpBoolean:
                     buf.extend(offs + 1);
-                    buf.arr[offs++] = (byte)(f.getBoolean(obj) ? 1 : 0);
+                    buf.arr[offs++] = (byte)(provider.getBoolean(f, obj) ? 1 : 0);
                     continue;
                 case ClassDescriptor.tpShort:
                     buf.extend(offs + 2);
-                    Bytes.pack2(buf.arr, offs, f.getShort(obj));
+                    Bytes.pack2(buf.arr, offs, provider.getShort(f, obj));
                     offs += 2;
                     continue;
                 case ClassDescriptor.tpChar:
                     buf.extend(offs + 2);
-                    Bytes.pack2(buf.arr, offs, (short)f.getChar(obj));
+                    Bytes.pack2(buf.arr, offs, (short)provider.getChar(f, obj));
                     offs += 2;
                     continue;
                 case ClassDescriptor.tpInt:
                     buf.extend(offs + 4);
-                    Bytes.pack4(buf.arr, offs, f.getInt(obj));
+                    Bytes.pack4(buf.arr, offs, provider.getInt(f, obj));
                     offs += 4;
                     continue;
                 case ClassDescriptor.tpLong:
                     buf.extend(offs + 8);
-                    Bytes.pack8(buf.arr, offs, f.getLong(obj));
+                    Bytes.pack8(buf.arr, offs, provider.getLong(f, obj));
                     offs += 8;
                     continue;
                 case ClassDescriptor.tpFloat:
                     buf.extend(offs + 4);
-                    Bytes.packF4(buf.arr, offs, f.getFloat(obj));
+                    Bytes.packF4(buf.arr, offs, provider.getFloat(f, obj));
                     offs += 4;
                     continue;
                 case ClassDescriptor.tpDouble:
                     buf.extend(offs + 8);
-                    Bytes.packF8(buf.arr, offs, f.getDouble(obj));
+                    Bytes.packF8(buf.arr, offs, provider.getDouble(f, obj));
                     offs += 8;
                     continue;
                 case ClassDescriptor.tpEnum:
 		{
-                    Enum e = (Enum)f.get(obj);
+			Enum e = (Enum)provider.get(f, obj);
                     buf.extend(offs + 4);
                     if (e == null) {
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4672,24 +4668,24 @@ public class StorageImpl implements Storage {
                 case ClassDescriptor.tpDate:
                 {
                     buf.extend(offs + 8);
-                    Date d = (Date)f.get(obj);
+                    Date d = (Date)provider.get(f, obj);
                     long msec = (d == null) ? Storage.INVALID_DATE : d.getTime();
                     Bytes.pack8(buf.arr, offs, msec);
                     offs += 8;
                     continue;
                 }
                 case ClassDescriptor.tpString:
-                    offs = buf.packString(offs, (String)f.get(obj));
+                    offs = buf.packString(offs, (String)provider.get(f, obj));
                     continue;
                 case ClassDescriptor.tpClass:
-                    offs = buf.packString(offs, ClassDescriptor.getClassName((Class)f.get(obj)));
+                    offs = buf.packString(offs, ClassDescriptor.getClassName((Class)provider.get(f, obj)));
                     continue;
                 case ClassDescriptor.tpObject:
-                    offs = swizzle(buf, offs, f.get(obj));
+                    offs = swizzle(buf, offs, provider.get(f, obj));
                     continue;
                 case ClassDescriptor.tpValue:
                 {
-                    Object value = f.get(obj);
+                    Object value = provider.get(f, obj);
                     if (value == null) {
                         throw new StorageError(StorageError.NULL_VALUE, fd.fieldName);
                     } else if (value instanceof IPersistent) {
@@ -4699,17 +4695,17 @@ public class StorageImpl implements Storage {
                     continue;
                 }
                 case ClassDescriptor.tpRaw:
-                    offs = packValue(f.get(obj), offs, buf);
+                    offs = packValue(provider.get(f, obj), offs, buf);
                     continue;
                 case ClassDescriptor.tpCustom:
                 {
-                    serializer.pack(f.get(obj), buf.getOutputStream());
+                    serializer.pack(provider.get(f, obj), buf.getOutputStream());
                     offs = buf.size();
                     continue;
                 }
                 case ClassDescriptor.tpArrayOfByte:
                 {
-                    byte[] arr = (byte[])f.get(obj);
+                    byte[] arr = (byte[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4726,7 +4722,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfBoolean:
                 {
-                    boolean[] arr = (boolean[])f.get(obj);
+                    boolean[] arr = (boolean[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4744,7 +4740,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfShort:
                 {
-                    short[] arr = (short[])f.get(obj);
+                    short[] arr = (short[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4763,7 +4759,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfChar:
                 {
-                    char[] arr = (char[])f.get(obj);
+                    char[] arr = (char[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4782,7 +4778,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfInt:
                 {
-                    int[] arr = (int[])f.get(obj);
+                    int[] arr = (int[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4801,7 +4797,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfEnum:
                 {
-                    Enum[] arr = (Enum[])f.get(obj);
+                    Enum[] arr = (Enum[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4824,7 +4820,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfLong:
                 {
-                    long[] arr = (long[])f.get(obj);
+                    long[] arr = (long[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4843,7 +4839,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfFloat:
                 {
-                    float[] arr = (float[])f.get(obj);
+                    float[] arr = (float[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4862,7 +4858,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfDouble:
                 {
-                    double[] arr = (double[])f.get(obj);
+                    double[] arr = (double[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4881,7 +4877,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfDate:
                 {
-                    Date[] arr = (Date[])f.get(obj);
+                    Date[] arr = (Date[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4902,7 +4898,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfString:
                 {
-                    String[] arr = (String[])f.get(obj);
+                    String[] arr = (String[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4920,7 +4916,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfObject:
                 {
-                    Object[] arr = (Object[])f.get(obj);
+                    Object[] arr = (Object[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4938,7 +4934,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpArrayOfValue:
                 {
-                    Object[] arr = (Object[])f.get(obj);
+                    Object[] arr = (Object[])provider.get(f, obj);
                     if (arr == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
@@ -4961,7 +4957,7 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpLink:
                 {
-                    LinkImpl link = (LinkImpl)f.get(obj);
+                    LinkImpl link = (LinkImpl)provider.get(f, obj);
                     if (link == null) {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);

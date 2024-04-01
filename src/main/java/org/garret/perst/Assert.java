@@ -40,6 +40,7 @@ public class Assert {
 
     /**
      * Throw assertion failed exception with given description.
+     * @param description string describing checked condition
      */
     public static final void failed(String description) { 
         throw new AssertionFailed(description);

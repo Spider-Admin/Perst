@@ -856,3 +856,8 @@ in Database class
 1. Support Java 9
 2. Add "perst.ignore.missed.classes" property
 
+--- Release version 4.40 16.01.2024 -------------------------------------
+1. Fix Sun14ReflectionProvider for JDK 21
+2. Fix JavaDOC comments issues
+
+

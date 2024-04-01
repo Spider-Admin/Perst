@@ -1,7 +1,7 @@
 /*
  * $URL: QueryTest.java $ 
  * $Rev: 4351 $ 
- * $Date: 2008-04-26 11:49:31 +0400 (Сб., 26 апр. 2008) $
+ * $Date: 2008-04-26 09:49:31 +0200 (Sat, 26 Apr 2008) $
  *
  * Copyright 2005 Netup, Inc. All rights reserved.
  * URL:    http://www.netup.biz
