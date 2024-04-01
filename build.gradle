@@ -1,0 +1,32 @@
+plugins {
+	id "java-library"
+	id "eclipse"
+}
+
+repositories {
+	mavenCentral()
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = "UTF-8"
+}
+
+sourceSets {
+	main {
+		java {
+			exclude "org/garret/perst/aspectj/**"
+			exclude "org/garret/perst/jassist/**"
+		}
+	}
+}
+
+dependencies {
+	testImplementation(platform("org.junit:junit-bom:5.10.2"))
+	testImplementation("org.junit.vintage:junit-vintage-engine")
+	testImplementation("junit:junit:4.13.2")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+test {
+	useJUnitPlatform()
+}
