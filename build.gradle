@@ -1,6 +1,7 @@
 plugins {
 	id "java-library"
 	id "eclipse"
+	id "maven-publish"
 }
 
 repositories {
@@ -9,6 +10,17 @@ repositories {
 
 tasks.withType(JavaCompile) {
 	options.encoding = "UTF-8"
+}
+
+group = "org.garret"
+version = "4.39.0"
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			from components.java
+		}
+	}
 }
 
 sourceSets {
