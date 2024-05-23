@@ -43,7 +43,5 @@ test {
 	useJUnitPlatform()
 	filter {
 		excludeTestsMatching "org.garret.perst.All"
-		excludeTestsMatching "org.garret.perst.StorageTest.testTransaction01"
-		excludeTestsMatching "org.garret.perst.PersistentSetTest.test00"
 	}
 }

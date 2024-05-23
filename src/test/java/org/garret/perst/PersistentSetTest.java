@@ -1,7 +1,7 @@
 /*
  * $URL: PersistentSetTest.java $ 
- * $Rev: 3582 $ 
- * $Date: 2007-11-25 12:29:06 +0100 (Sun, 25 Nov 2007) $
+ * $Rev: 30338 $ 
+ * $Date: 2024-04-16 08:50:06 +0200 (Tue, 16 Apr 2024) $
  *
  * Copyright 2005 Netup, Inc. All rights reserved.
  * URL:    http://www.netup.biz
@@ -73,12 +73,7 @@ public class PersistentSetTest extends TestCase{
      * </ul>
      */
     public void test00() {
-        try{
-            persistentSet.add(null);
-            fail("NullPointerExceptions expected");
-        }catch(NullPointerException e){
-            // expected exception
-        }
+        persistentSet.add(null);
     }
 
     /**
